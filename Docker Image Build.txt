@@ -1,0 +1,53 @@
+1. Create a Dockerfile as below:
+
+# cat Dockerfile
+FROM ubuntu:latest
+
+ENV trainer sri
+
+RUN apt-get update && apt-get install -y curl
+RUN apt-get update && apt-get install -y nginx
+
+WORKDIR /var/www/html/
+ADD index.html ./
+
+EXPOSE 80
+
+CMD ["nginx", "-g", "daemon off;"]
+
+STOPSIGNAL SIGTERM
+HEALTHCHECK CMD curl localhost:80
+#
+
+2. Create a index as below:
+# cat index.html
+<html>
+<body> This is BHARTAT </body>
+  </html>
+# pwd
+/project
+#
+====================================================
+Command to build a image
+#docker build -t sri-cts .
+
+# docker images
+REPOSITORY               TAG       IMAGE ID       CREATED          SIZE
+sri-cts                  latest    21965b2e21fb   7 minutes ago    171MB
+
+Command to run/install a container
+#docker run -itd --name=tcs -p 80:80 sri-cts
+
+# docker ps
+CONTAINER ID   IMAGE     COMMAND                  CREATED         STATUS                   PORTS                NAMES
+f99a515aa127   sri-cts   "nginx -g 'daemon of…"   4 minutes ago   Up 4 minutes (healthy)   0.0.0.0:80->80/tcp   tcs
+#
+
+Checking:
+# curl localhost:80
+<html>
+<body> This is BHARTAT </body>
+  </html>
+#
+
+

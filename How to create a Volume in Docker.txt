@@ -1,0 +1,91 @@
+1) Create a volume vol1 as below:
+# docker volume create vol1
+vol1
+
+2) Default location of volume:
+# cd /var/lib/docker/
+# ls
+buildkit    image    overlay2  runtimes  tmp    volumes
+containers  network  plugins   swarm     trust
+# cd volumes/
+# ls
+backingFsBlockDev  metadata.db  vol1
+# cd vol1/
+# pwd
+/var/lib/docker/volumes/vol1
+# ls
+_data
+# cd _data/
+# ls
+# pwd
+/var/lib/docker/volumes/vol1/_data
+
+3) Touch some files under /var/lib/docker/volumes/vol1/_data
+# touch abc def
+#  ls
+abc  def
+
+4) Run/Install tomcat on new volume vol1 as below:
+# docker run -d -P -v vol1:/adabala tomcat
+
+5) # docker ps
+CONTAINER ID   IMAGE     COMMAND             CREATED          STATUS          PORTS                     NAMES
+3e73c6cb7b2f   tomcat    "catalina.sh run"   50 seconds ago   Up 49 seconds   0.0.0.0:49153->8080/tcp   mystifying_banach
+
+6) Goto Container
+# docker exec -it 3e73c6cb7b2f bash
+
+# df -h
+Filesystem      Size  Used Avail Use% Mounted on
+overlay          10G  4.2G  5.9G  42% /
+tmpfs            64M     0   64M   0% /dev
+tmpfs           403M     0  403M   0% /sys/fs/cgroup
+shm              64M     0   64M   0% /dev/shm
+/dev/xvda2       10G  4.2G  5.9G  42% /adabala ---> This is created
+tmpfs           403M     0  403M   0% /proc/acpi
+tmpfs           403M     0  403M   0% /proc/scsi
+tmpfs           403M     0  403M   0% /sys/firmware
+
+# cd /adabala
+# ls -ltrh
+total 0
+-rw-r--r--. 1 root root 0 Dec 24 15:13 def
+-rw-r--r--. 1 root root 0 Dec 24 15:13 abc
+
+Touch few more files
+# touch 123 345
+
+# ls -ltrh
+total 0
+-rw-r--r--. 1 root root 0 Dec 24 15:13 def
+-rw-r--r--. 1 root root 0 Dec 24 15:13 abc
+-rw-r--r--. 1 root root 0 Dec 24 15:22 345
+-rw-r--r--. 1 root root 0 Dec 24 15:22 123
+
+Default directory for tomcat:
+# cd /usr/local/tomcat/
+root@3e73c6cb7b2f:/usr/local/tomcat# ls
+BUILDING.txt     LICENSE  README.md      RUNNING.txt  conf  logs            temp     webapps.dist
+CONTRIBUTING.md  NOTICE   RELEASE-NOTES  bin          lib   native-jni-lib  webapps  work
+
+Now come out from container and check new files on host system
+# exit
+exit
+# pwd
+/var/lib/docker/volumes/vol1/_data
+# ls -ltrh
+total 0
+-rw-r--r--. 1 root root 0 Dec 24 15:13 def
+-rw-r--r--. 1 root root 0 Dec 24 15:13 abc
+-rw-r--r--. 1 root root 0 Dec 24 15:22 345
+-rw-r--r--. 1 root root 0 Dec 24 15:22 123
+#
+
+Note: If you delete containers, data will be not be lost under volumes.
+
+To check the available volumes
+# docker  volume ls
+DRIVER    VOLUME NAME
+local     vol1
+#
+
