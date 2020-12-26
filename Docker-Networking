@@ -1,0 +1,198 @@
+Use the default bridge network:
+
+[root@ip-172-31-46-194 ~]# docker network ls
+NETWORK ID     NAME      DRIVER    SCOPE
+7054989e5bfd   bridge    bridge    local
+58ec0a39023c   host      host      local
+28d92f1ea738   none      null      local
+[root@ip-172-31-46-194 ~]#
+
+[root@ip-172-31-46-194 ~]# docker run -dit --name sri alpine ash
+b28d68e539a519c4591ec530a9a206254fb83909b3def1263527b28e2021b4a7
+[root@ip-172-31-46-194 ~]# docker run -dit --name kri alpine ash
+0a9d181c0ddc43e1c88c4a6b5ef0fbc03916f6ebf7e86d533d09eb013089acf8
+[root@ip-172-31-46-194 ~]# docker ps
+CONTAINER ID   IMAGE     COMMAND   CREATED          STATUS          PORTS     NAMES
+0a9d181c0ddc   alpine    "ash"     9 seconds ago    Up 8 seconds              kri
+b28d68e539a5   alpine    "ash"     24 seconds ago   Up 22 seconds             sri
+[root@ip-172-31-46-194 ~]#
+
+Inspect the bridge network to see what containers are connected to it.
+$ docker network inspect bridge
+
+[root@ip-172-31-46-194 ~]# docker network inspect bridge
+
+        },
+        "ConfigOnly": false,
+        "Containers": {
+            "0a9d181c0ddc43e1c88c4a6b5ef0fbc03916f6ebf7e86d533d09eb013089acf8": {
+                "Name": "kri", -----------------------------------------------------------------------------this is for "kri" container
+                "EndpointID": "e491fe185298882e9efdda8719f1d765f0453678a0f9784c2294a98c9337b1f0",
+                "MacAddress": "02:42:ac:11:00:03",
+                "IPv4Address": "172.17.0.3/16",
+                "IPv6Address": ""
+            },
+            "b28d68e539a519c4591ec530a9a206254fb83909b3def1263527b28e2021b4a7": {
+                "Name": "sri",  -----------------------------------------------------------------------------this is for "sri" container
+                "EndpointID": "a14642aa73ba0d446806aa6a64d38fdafdfbd8fdadf6e61cafba4a07852fcb1c",
+                "MacAddress": "02:42:ac:11:00:02",
+                "IPv4Address": "172.17.0.2/16",
+                "IPv6Address": ""
+            }
+        
+[root@ip-172-31-46-194 ~]#
+
+The containers are running in the background. Use the docker attach command to connect to alpine1.
+
+$ docker attach sri
+/ #
+
+Now try ping google.com:
+/ # ping -c 2 google.com
+PING google.com (172.217.166.46): 56 data bytes
+64 bytes from 172.217.166.46: seq=0 ttl=110 time=1.657 ms
+64 bytes from 172.217.166.46: seq=1 ttl=110 time=1.791 ms
+
+--- google.com ping statistics ---
+2 packets transmitted, 2 packets received, 0% packet loss
+round-trip min/avg/max = 1.657/1.724/1.791 ms
+/ #
+
+Now try to ping the second container:
+/ # ping -c 2 172.17.0.3
+PING 172.17.0.3 (172.17.0.3): 56 data bytes
+64 bytes from 172.17.0.3: seq=0 ttl=64 time=0.093 ms
+64 bytes from 172.17.0.3: seq=1 ttl=64 time=0.085 ms
+
+--- 172.17.0.3 ping statistics ---
+2 packets transmitted, 2 packets received, 0% packet loss
+round-trip min/avg/max = 0.085/0.089/0.093 ms
+/ #
+
+/ # ping -c 2 kri
+ping: bad address 'kri'
+/ # ping -c 2 sri
+ping: bad address 'sri'
+/ #
+================================================================================================================================================
+================================================================================================================================================
+================================================================================================================================================
+================================================================================================================================================
+Use user-defined bridge networks:
+
+
+Create the sri-net network. You do not need the --driver bridge flag since it’s the default, but this example shows how to specify it.
+
+$ docker network create --driver bridge sri-net
+
+[root@ip-172-31-46-194 ~]# docker network create --driver bridge sri-net
+25d8280e3062835f0ffec6564057c2769babe08ee3eea86ab59e0b08fe313a1a
+
+[root@ip-172-31-46-194 ~]# docker network ls
+NETWORK ID     NAME      DRIVER    SCOPE
+7054989e5bfd   bridge    bridge    local
+58ec0a39023c   host      host      local
+28d92f1ea738   none      null      local
+25d8280e3062   sri-net   bridge    local
+[root@ip-172-31-46-194 ~]#
+
+Inspect the sri-net network. This shows you its IP address and the fact that no containers are connected to it:
+$ docker network inspect sri-net
+
+[root@ip-172-31-46-194 ~]# docker run -dit --name sri1 --network sri-net alpine ash
+4911303a9f8679b281e755daa9ae9446b3af01b8ad02e3c50ff5ce21cdb9c9c7
+[root@ip-172-31-46-194 ~]# docker run -dit --name sri2 --network sri-net alpine ash
+a2d617575b4a9e4e26d69c0677e10c116cd5b3e2f61df0de0a2a353ce8a74f30
+[root@ip-172-31-46-194 ~]# docker run -dit --name sri3 alpine ash
+092fef6b73831860ab92faca293fe5f3a4f501eff1ba745570e212be28de0753
+[root@ip-172-31-46-194 ~]# docker run -dit --name sri4 --network sri-net alpine ash
+429ba49b3131f06be085cd5501209b5c627fec6279f45e0bfa4c812fda6bcc2b
+[root@ip-172-31-46-194 ~]# docker network connect bridge sri4
+[root@ip-172-31-46-194 ~]#
+
+[root@ip-172-31-46-194 ~]# docker container ls
+CONTAINER ID   IMAGE     COMMAND   CREATED         STATUS         PORTS     NAMES
+429ba49b3131   alpine    "ash"     4 minutes ago   Up 4 minutes             sri4
+092fef6b7383   alpine    "ash"     7 minutes ago   Up 7 minutes             sri3
+a2d617575b4a   alpine    "ash"     7 minutes ago   Up 7 minutes             sri2
+4911303a9f86   alpine    "ash"     8 minutes ago   Up 8 minutes             sri1
+[root@ip-172-31-46-194 ~]#
+
+Inspect the bridge network and the sri-net network again:
+
+[root@ip-172-31-46-194 ~]# docker network inspect bridge
+        "ConfigOnly": false,
+        "Containers": {
+            "092fef6b73831860ab92faca293fe5f3a4f501eff1ba745570e212be28de0753": {
+                "Name": "sri3",
+                "EndpointID": "774708826c9d37781664203966d4d314610b76f3120924db1b017bf0f9122d8f",
+                "MacAddress": "02:42:ac:11:00:02",
+                "IPv4Address": "172.17.0.2/16",
+                "IPv6Address": ""
+            },
+            "429ba49b3131f06be085cd5501209b5c627fec6279f45e0bfa4c812fda6bcc2b": {
+                "Name": "sri4",
+                "EndpointID": "1468e1d7428343acdfc83c74a59b1438e6540247c51b84563a4e6fcdd2079b2b",
+                "MacAddress": "02:42:ac:11:00:03",
+                "IPv4Address": "172.17.0.3/16",
+                "IPv6Address": ""
+[root@ip-172-31-46-194 ~]#
+
+[root@ip-172-31-46-194 ~]# docker network inspect sri-net
+        "Containers": {
+            "429ba49b3131f06be085cd5501209b5c627fec6279f45e0bfa4c812fda6bcc2b": {
+                "Name": "sri4",
+                "EndpointID": "911e3e220f57997dc99d01bbdf48503b782d4b764265a88100405d1e9b42a2d6",
+                "MacAddress": "02:42:ac:12:00:04",
+                "IPv4Address": "172.18.0.4/16",
+                "IPv6Address": ""
+            },
+            "4911303a9f8679b281e755daa9ae9446b3af01b8ad02e3c50ff5ce21cdb9c9c7": {
+                "Name": "sri1",
+                "EndpointID": "dbd963d0efa15ffc62614c78b96a95cd4fa9eb2cf0a786c894eea9c01ea22e35",
+                "MacAddress": "02:42:ac:12:00:02",
+                "IPv4Address": "172.18.0.2/16",
+                "IPv6Address": ""
+            },
+            "a2d617575b4a9e4e26d69c0677e10c116cd5b3e2f61df0de0a2a353ce8a74f30": {
+                "Name": "sri2",
+                "EndpointID": "d26a0094976c317217c23af5c38a15b0125037a06bfa50324e00a0f920728c2a",
+                "MacAddress": "02:42:ac:12:00:03",
+                "IPv4Address": "172.18.0.3/16",
+                "IPv6Address": ""
+            }
+[root@ip-172-31-46-194 ~]#
+[root@ip-172-31-46-194 ~]# docker container attach sri1
+/ # ping -c 2 sri2
+PING sri2 (172.18.0.3): 56 data bytes
+64 bytes from 172.18.0.3: seq=0 ttl=64 time=0.092 ms
+64 bytes from 172.18.0.3: seq=1 ttl=64 time=0.091 ms
+
+--- sri2 ping statistics ---
+2 packets transmitted, 2 packets received, 0% packet loss
+round-trip min/avg/max = 0.091/0.091/0.092 ms
+/ #
+/ # ping -c 2 sri4
+PING sri4 (172.18.0.4): 56 data bytes
+64 bytes from 172.18.0.4: seq=0 ttl=64 time=0.132 ms
+64 bytes from 172.18.0.4: seq=1 ttl=64 time=0.092 ms
+
+--- sri4 ping statistics ---
+2 packets transmitted, 2 packets received, 0% packet loss
+round-trip min/avg/max = 0.092/0.112/0.132 ms
+/ # ping -c 2 sri1
+PING sri1 (172.18.0.2): 56 data bytes
+64 bytes from 172.18.0.2: seq=0 ttl=64 time=0.031 ms
+64 bytes from 172.18.0.2: seq=1 ttl=64 time=0.090 ms
+
+--- sri1 ping statistics ---
+2 packets transmitted, 2 packets received, 0% packet loss
+round-trip min/avg/max = 0.031/0.060/0.090 ms
+/ # ping -c 2 sri3
+ping: bad address 'sri3'
+/ #
+
+Remember that sri4 is connected to both the default bridge network and sri-net. It should be able to reach all of the other containers. However, you will need to address sri3 by its IP address. Attach to it and run the tests.
+
+
+
