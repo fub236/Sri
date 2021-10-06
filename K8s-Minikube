@@ -1,0 +1,46 @@
+Installation of Minikube on EC2 Ubuntu
+1)Run a public EC2 Server with the following setup:
+ Ubuntu Server 18.04 LTS (HVM), SSD Volume Type
+ Instance Type 	t3.micro (2 vCPU, 1GB Memory)
+ Storage 	8 GB (gp2)
+
+2) Update the System and Install Docker
+
+sudo apt-get update 
+sudo apt-get install docker.io -y
+
+3)Install kubectl
+#curl -LO https://storage.googleapis.com/kubernetes-release/release/`curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt`/bin/linux/amd64/kubectl
+
+chmod +x ./kubectl
+mv ./kubectl /usr/local/bin/kubectl
+
+4) Install Minikube
+#curl -Lo minikube https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64 && chmod +x minikube && sudo mv minikube /usr/local/bin/
+
+Running Minikube on EC2 Ubuntu:
+------------------------------
+A)Start Minikube
+#minikube start --vm-driver=none
+
+B) Check the status of Minikube
+#minikube status
+
+C) Let us deploy our first container
+#kubectl create deployment hello-minikube --image=gcr.io/google_containers/echoserver:1.4 --port=8080
+
+D) Expose the container ports so that we can access it.
+#kubectl expose deployment hello-minikube --type=NodePort
+
+E) Find where port 8080 in container exposed in EC2 Instance port.
+#kubectl get services
+
+F) Access the our container via the EC2 Instance Port on a web browser.
+The address is <ipv4_public_ip>:<ec2_port>.
+
+Test:
+#kubectl create deployment sri --image=httpd --port=80
+#kubectl expose deployment sri --type=NodePort
+
+
+

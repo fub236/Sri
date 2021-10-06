@@ -1,0 +1,130 @@
+https://docs.aws.amazon.com/AmazonECS/latest/developerguide/docker-basics.html
+puttygen srikey.pem -o srikey.ppk
+
+How to Install Docker:
+---------------------
+Docker can be installed using yum, apt-get or amazon-linux-extras based on linux distribution. Since I am using amazon linux, here iam using amazon-linux-extras command.
+
+1. Step patch the VM update to date using below command:
+#yum update -y
+
+2. Install the most recent Docker Engine package.
+#amazon-linux-extras install docker
+
+sudo apt-get update 
+sudo apt-get install docker.io -y
+
+3. Start the Docker service.
+#sudo service docker start
+
+4.Add the "user ID" to the docker group so you can execute Docker commands without using sudo.
+#usermod -a -G docker "User ID"
+
+5. To check the docker information
+#docker info
+====================================================================================================================
+Imags stored under:  Linux: /var/lib/docker/ 
+To see the content of Image: #docker image history <image_name> or #docker image history --no-trunc <image_name> > image_history
+To Search Images/Containers: #docker search <image name>
+To access the container to modify inside the container: #docker exec -it <container id> /bin/bash
+#docker build -> builds a new image from the source code. docker create creates a writeable container from the image and prepares it for running. #docker run -> creates the container (same as docker create ) and runs it (#docker run an #docker create - both are same)
+====================================================================================================================
+Commands:
+
+#docker ps -> to list the activie containers
+#docker ps -a -> to list all (active and inactive) containers
+
+Deploying a pre-built (image) WebApplication:
+#docker run -d -t -i -p 80:80 nginx 
+
+(The run function of the docker command tells Docker to find a specified Docker image and start a container running that image. In order to launch this Docker container in the background, I included the –d (detach) flag.)
+
+#docker images
+nginx        latest    ad4c705f24d3   7 days ago    133MB
+
+#docker ps
+CONTAINER ID   IMAGE     COMMAND                  CREATED         STATUS         PORTS                               NAMES
+324cb053fedb   nginx     "/docker-entrypoint.…"   6 minutes ago   Up 6 minutes   0.0.0.0:80->80/tcp, :::80->80/tcp   peaceful_shirley
+
+
+Stopping and Removing the Container:
+#docker stop <Container ID> or #docker kill <Container ID>
+#docker start <Container ID>
+#docker rm <Container ID>
+
+#docker images -> lists all available images locally
+#docker images rm <IMAGE ID> -> to remove image locally (make sure corresponding container stopped and removed)
+====================================================================================================================
+Create a Docker image:
+#touch Dockerfile
+
+############ADD BELOW LINES TILL END############
+FROM ubuntu:18.04
+
+# Install dependencies
+RUN apt-get update && \
+ apt-get -y install apache2
+
+# Install apache and write hello world message
+RUN echo 'Hello India' > /var/www/html/index.html
+
+# Configure apache
+RUN echo '. /etc/apache2/envvars' > /root/run_apache.sh && \
+ echo 'mkdir -p /var/run/apache2' >> /root/run_apache.sh && \
+ echo 'mkdir -p /var/lock/apache2' >> /root/run_apache.sh && \ 
+ echo '/usr/sbin/apache2 -D FOREGROUND' >> /root/run_apache.sh && \ 
+ chmod 755 /root/run_apache.sh
+
+EXPOSE 80
+
+CMD /root/run_apache.sh
+############END############
+
+#docker build -t hello-world .
+#docker run -d -t -i -p 80:80 hello-world
+====================================================================================================
+HOW TO ADD VoLUME To CONTAINERS:
+#docker voume list   -> To list the Volumes
+#docker volume create sri-vol  -> To create a Volume
+#docker run -it --name=sriVM --mount source=sri-vol,destination=/sridata ubuntu -> To run ubunto container with a created volume
+#docker volume rm [volume_name]  -> To delete Volume
+====================================================================================================
+[root@ip-172-31-1-81 ~]# docker images
+REPOSITORY   TAG       IMAGE ID       CREATED          SIZE
+aask         latest    d8a7e2922580   52 seconds ago   197MB
+ubuntu       18.04     54919e10a95d   2 weeks ago      63.1MB
+[root@ip-172-31-1-81 ~]# docker tag aask:latest fub236/sri449:latest
+[root@ip-172-31-1-81 ~]# docker images
+REPOSITORY      TAG       IMAGE ID       CREATED         SIZE
+fub236/sri449   latest    d8a7e2922580   3 minutes ago   197MB
+aask            latest    d8a7e2922580   3 minutes ago   197MB
+ubuntu          18.04     54919e10a95d   2 weeks ago     63.1MB
+[root@ip-172-31-1-81 ~]# docker push fub236/sri449:latest
+The push refers to repository [docker.io/fub236/sri449]
+852595c584ef: Pushed
+4b44f96deb28: Pushed
+60b55c07db8e: Pushed
+6babb56be259: Mounted from library/ubuntu
+latest: digest: sha256:1f2bc1271d2e9868eb9d617e1eaf423609cfbe7a8d3305a6c4812ea171ac26a1 size: 1155
+[root@ip-172-31-1-81 ~]#
+
+================================================================================================
+Create docker Image using container
+
+docker commit <container ID>
+docker images
+docker tag <image id> mongodb.1v
+docker tag mongodb.1v:latest fub236/sri449:mongodb.1v
+================================================================================================
+#docker run -d -t -i -p 80:80 fub236/sri449:latest
+
+
+
+
+
+
+
+
+
+
+

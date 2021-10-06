@@ -1,0 +1,119 @@
+Docker Container Commands:
+
+1) Create a container (without starting it):
+#docker create [IMAGE]
+
+2) Rename an existing container:
+#docker rename [CONTAINER_NAME] [NEW_CONTAINER_NAME]
+
+3) Run a command in a new container:
+#docker run [IMAGE] [COMMAND]
+
+docker run --rm [IMAGE] – removes a container after it exits.
+docker run -td [IMAGE] – starts a container and keeps it running.
+docker run -it [IMAGE] – starts a container, allocates a pseudo-TTY connected to the container’s stdin, and creates an interactive bash shell in the container.
+docker run -it-rm [IMAGE] – creates, starts, and runs a command inside the container. Once it executes the command, the container is removed.
+
+4)Delete a container (if it is not running):
+docker rm [CONTAINER]
+
+5) Update the configuration of one or more containers:
+docker update [CONTAINER]
+
+6) Start a container:
+docker start [CONTAINER]
+
+7) Stop a running container:
+docker stop [CONTAINER]
+
+8) Stop a running container and start it up again:
+docker restart [CONTAINER]
+
+9) Pause processes in a running container:
+docker pause [CONTAINER]
+
+10)Unpause processes in a running container:
+docker unpause [CONTAINER]
+
+11) Kill a container by sending a SIGKILL to a running container:
+docker kill [CONTAINER]
+
+12) Attach local standard input, output, and error streams to a running container:
+docker attach [CONTAINER]
+============================================================================================================
+Docker Image Commands:
+
+1) Create an image from a Dockerfile:
+docker build [URL]
+docker build -t – builds an image from a Dockerfile in the current directory and tags the image
+
+2) Pull an image from a registry:
+docker pull [IMAGE]
+
+3) Push an image to a registry:
+docker push [IMAGE]
+
+4) Create an image from a tarball:
+docker import [URL/FILE]
+
+5) Create an image from a container:
+docker commit [CONTAINER] [NEW_IMAGE_NAME]
+
+6) Remove an image:
+docker rmi [IMAGE]
+
+7) Load an image from a tar archive or stdin:
+docker load [TAR_FILE/STDIN_FILE]
+
+8) Save an image to a tar archive, streamed to STDOUT with all parent layers, tags, and versions:
+docker save [IMAGE] > [TAR_FILE]
+===================================================================================================================
+Docker Commands for Container and Image Information:
+
+1) List running containers:
+docker ps
+docker ps -a – lists both running containers and ones that have stopped
+
+2) List the logs from a running container:
+docker logs [CONTAINER]
+
+3) List low-level information on Docker objects:
+docker inspect [OBJECT_NAME/ID]
+
+4) List real-time events from a container:
+docker events [CONTAINER]
+
+5) Show port (or specific) mapping for a container:
+docker port [CONTAINER]
+
+6) Show running processes in a container:
+docker top [CONTAINER]
+
+7) Show live resource usage statistics of containers:
+docker stats [CONTAINER]
+
+8) Show changes to files (or directories) on a filesystem:
+docker diff [CONTAINER]
+
+9) List all images that are locally stored with the docker engine:
+docke image ls
+
+10) Show the history of an image:
+docker history [IMAGE]
+===================================================================================================================
+Networking Commands:
+
+1) List networks:
+docker network ls
+
+2) Remove one or more networks:
+docker network rm [NETWORK]
+
+3) Show information on one or more networks:
+docker network inspect [NETWORK]
+
+4) Connects a container to a network:
+docker network connect [NETWORK] [CONTAINER]
+
+5) Disconnect a container from a network:
+docker network disconnect [NETWORK] [CONTAINER]
